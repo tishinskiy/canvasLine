@@ -117,7 +117,7 @@ var pointsMove = function(){
 
 			ctx.clearRect(0, 0, w, h);
 			blocks.forEach(function(item, j, arr){
-				item.movePoints = [];
+				item.movePoints = [[], [], [], []];
 				item.movePoints[0] = [
 					item.points[0][0] + (item.newPoints[0][0] - item.points[0][0]) * (ik / fps), 
 					item.points[0][1] + (item.newPoints[0][1] - item.points[0][1]) * (ik / fps)
@@ -125,18 +125,19 @@ var pointsMove = function(){
 
 				item.movePoints[1] = [
 					item.movePoints[0][0], 
-					item.movePoints[0][1] + blockHeight
-				];
-
-				item.movePoints[2] = [
-					item.points[2][0] + (item.newPoints[2][0] - item.points[2][0]) * (ik / fps), 
-					item.points[2][1] + (item.newPoints[2][1] - item.points[2][1]) * (ik / fps)
+					item.movePoints[0][1] + (blockHeight * (item.movePoints[0][1] / centerLine) * (ik / fps))
 				];
 
 				item.movePoints[3] = [
-					item.movePoints[2][0], 
-					item.movePoints[2][1] - blockHeight
+					item.points[3][0] + (item.newPoints[3][0] - item.points[3][0]) * (ik / fps), 
+					item.points[3][1] + (item.newPoints[3][1] - item.points[3][1]) * (ik / fps)
 				];
+				
+				item.movePoints[2] = [
+					item.movePoints[3][0], 
+					item.movePoints[3][1] + (blockHeight * (item.movePoints[3][1] / centerLine) * (ik / fps))
+				];
+
 
 				ctx.fillStyle = colorMove(item, ik);
 				ctx.strokeStyle = "transparent";
@@ -157,7 +158,7 @@ var pointsMove = function(){
 
 	var ik = 0;
 			
-	var cadrTimer = setInterval(cadr(ik), 1000/120);
+	var cadrTimer = setInterval(cadr(ik), 1000/90);
 
 }
 
