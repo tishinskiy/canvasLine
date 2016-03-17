@@ -3,165 +3,128 @@ var canvas = document.getElementById("canvas");
 var w = canvas.clientWidth;
 var h = canvas.clientHeight;
 
-var blockHeight = 100;
-var blockWidth = 300;
+var xMouse = 0;
+var yMouse = 0;
 
-var centerLine = Math.round(h / 2 - blockHeight / 2);
+var blockWidth =50;
 
-var blockNumer =  Math.round(w / blockWidth);
+$("#canvas").mousemove(function(event) {
+	xMouse = event.pageX - $(this).offset().left;
+	yMouse = event.pageY - $(this).offset().top;
 
-var blockDefaultWidth = Math.round(w / blockNumer);
-var xFault = Math.round(blockDefaultWidth * 0.4);
 
-var fps = 30;
+
+	var aRad = angleValue(points[Math.round(points.length / 2)]);
+
+	ctx.clearRect(20, 30, 200, 20);
+
+	ctx.fillStyle = "#fff";
+	ctx.font = "normal 12px Arial";
+	ctx.fillText(aRad*180/Math.PI, 20, 50);
+
+
+});
+
+var centerLine = Math.round(h / 2 );
 
 var getRandomInt = function(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-var cR = getRandomInt(50, 200);
-var cG = getRandomInt(50, 200);
-var cB = getRandomInt(50, 200);
 
-blocks= [];
+var points= [];
 
-blockProto = {
-	constructor:function(start, width){
-		this.points = [];
-		this.bg = "rgb("+cR+","+ cG+","+ cB+")";
-		this.points[0] = [start, 0];
-		this.points[1] = [start, blockHeight];
-		this.points[2] = [start+width, blockHeight];
-		this.points[3] = [start+width, 0];
-		return this;
-	},
-	draw: function() {
-		drawObject(this);
-	}
-};
-
-var blockCreate = function(){
-
-	for (var i = 0; i < blockNumer; i++) {
-
-		var start = i * blockDefaultWidth;
-		blocks.push(Object.create(blockProto).constructor(start, blockDefaultWidth));
+var pointProto = {
+	constructor:function(x, y){
+		this.x = x;
+		this.y = y;
+		return this
 	}
 }
 
-var newPointsCreate = function() {
-	console.log(centerLine);
-	blocks.forEach(function(item, i, arr){
-		item.newPoints = [];
-
-		if(i == 0) {
-			item.newPoints[0] = [
-				item.points[0][0],
-				centerLine + getRandomInt(-Math.round(centerLine * 0.7), Math.round(centerLine * 0.7))
-			];
-			item.newPoints[1] = [
-				item.points[1][0],
-				item.newPoints[0][1] + blockHeight
-			];
-		}
-		else {
-			item.newPoints[0] = blocks[i-1].newPoints[3];
-			item.newPoints[1] = blocks[i-1].newPoints[2];
-		}
-
-		if (i == blocks.length) {
-			item.newPoints[2] = [
-				item.points[2][0] +getRandomInt(- Math.round(blockWidth * 0.4),  Math.round(blockWidth * 0.4)),
-				centerLine + getRandomInt(-Math.round(centerLine * 0.7), Math.round(centerLine * 0.7))
-			];
-		}
-		else {
-			item.newPoints[2] = [
-				item.points[2][0],
-				centerLine + getRandomInt(-Math.round(centerLine * 0.7), Math.round(centerLine * 0.7))
-			];
-		}
-		item.newPoints[3] = [
-			item.newPoints[2][0],
-			item.newPoints[2][1] - blockHeight
-		];
-
-		// console.log(item.newPoints[3][1] - centerLine);
-
-		colorNew(item);
-
-	});
+var pointsCreate = function(){
+	for (var i = -w; i <= w*2; i = i + blockWidth) {
+		points.push(Object.create(pointProto).constructor(i, centerLine));
+	}
 }
 
-var colorNew = function(obj) {
-	var a = obj.newPoints[1];
-	var b = obj.newPoints[2];
-
-	obj.cK = Math.round(Math.atan((b[1] - a[1]) / (b[0] - a[0])) * 10)*3;
-}
-
-var colorMove = function(obj, i) {
-	var newR = cR + ((cR + obj.cK) - cR) * (i / fps);
-	var newG = cG + ((cG + obj.cK) - cG) * (i / fps);
-	var newB = cB + ((cB + obj.cK) - cB) * (i / fps);
-
-	return("rgb("+Math.round(newR)+","+ Math.round(newG)+","+ Math.round(newB)+")");
-}
-
-var pointsMove = function(){
-
-	var cadr = function() {
-		return(function(){
-
-			ik++;
-
-			ctx.clearRect(0, 0, w, h);
-			blocks.forEach(function(item, j, arr){
-				item.movePoints = [[], [], [], []];
-				item.movePoints[0] = [
-					item.points[0][0] + (item.newPoints[0][0] - item.points[0][0]) * (ik / fps), 
-					item.points[0][1] + (item.newPoints[0][1] - item.points[0][1]) * (ik / fps)
-				];
-
-				item.movePoints[1] = [
-					item.movePoints[0][0], 
-					item.movePoints[0][1] + (blockHeight * (item.movePoints[0][1] / centerLine) * (ik / fps))
-				];
-
-				item.movePoints[3] = [
-					item.points[3][0] + (item.newPoints[3][0] - item.points[3][0]) * (ik / fps), 
-					item.points[3][1] + (item.newPoints[3][1] - item.points[3][1]) * (ik / fps)
-				];
-				
-				item.movePoints[2] = [
-					item.movePoints[3][0], 
-					item.movePoints[3][1] + (blockHeight * (item.movePoints[3][1] / centerLine) * (ik / fps))
-				];
+var pointsMove = function() {
+	var cpId = Math.round(points.length / 2)
+	var cp = points[cpId];
+	var rotation = true;
+	cp.y = getRandomInt(centerLine-blockWidth/2, centerLine+blockWidth/2);
+	var angle = anglePoints(points[cpId-1], points[cpId]);
 
 
-				ctx.fillStyle = colorMove(item, ik);
-				ctx.strokeStyle = "transparent";
-				ctx.lineWidth = 1;
-				ctx.beginPath();
+	for (var i = cpId+1; i < points.length; i++) {
 
-				item.movePoints.forEach(function(item, i, arr) {
-					ctx.lineTo(item[0], item[1]);
-				});
+		var alfa = getRandomInt(75, 135);
+		if (angle < -45) {
+			rotation = true;
+		}
+		if (angle > 45) {
+			rotation = false;
+		}
+		
+		if(rotation == true) {
+			angle = angle + (180 - alfa);
+		}
 
-				ctx.fill();
-				ctx.closePath();
-			});
-			if (ik == fps) {clearInterval(cadrTimer);
-}
-		});
+		if(rotation == false) {
+			angle = angle - (180 - alfa);
+		}
+
+		points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.5, blockWidth*1.5))*2;
+		points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.5, blockWidth*1.5);
+		
+	}
+	angle = angle = anglePoints(points[cpId-1], points[cpId]);
+
+	for (var i = cpId -1; i > 0; i--) {
+		var alfa = getRandomInt(75, 135);
+		if (angle < -45) {
+			rotation = true;
+		}
+		if (angle > 45) {
+			rotation = false;
+		}
+		
+		if(rotation == true) {
+			angle = angle + (180 - alfa);
+		}
+
+		if(rotation == false) {
+			angle = angle - (180 - alfa);
+		}
+
+		points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.5, blockWidth*1.5))*2;
+		points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.5, blockWidth*1);
 	}
 
-	var ik = 0;
-			
-	var cadrTimer = setInterval(cadr(ik), 1000/90);
 
+
+
+
+
+	pointsDraw();
 }
 
+function angleValue(obj) {
+	var a =  (Math.atan((yMouse - obj.y) / (xMouse - obj.x)));
+	if( (xMouse - obj.x) < 0 ) { a = Math.PI + a; }
+	if( ((xMouse - obj.x) < 0) && ((yMouse - obj.y) < 0) ) {
+		a = -(2* Math.PI - a);
+	}
+	return a;
+}
+
+
+function anglePoints(p1, p2) {
+	var a =  (Math.atan((p2.y - p1.y) / (p2.x - p1.x)));
+	if( (p2.x - p1.x) < 0 ) { a = Math.PI + a;}
+	if( ((p2.x - p1.x) < 0) && ((p2.y - p1.y) < 0) ) {a = -(2* Math.PI - a);}
+	return a*180/Math.PI;
+}
 
 var init = function() {
 	ctx = canvas.getContext('2d');
@@ -169,32 +132,39 @@ var init = function() {
 	canvas.height = h;
 }
 
+var pointsDraw = function() {
+	ctx.clearRect(0, 0, w, h);
 
-var drawObject = function(obj) {
-	ctx.fillStyle = obj.bg;
-	ctx.strokeStyle = "transparent";
-	ctx.lineWidth = 1;
 	ctx.beginPath();
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = "#3BFF5B";
 
-	obj.points.forEach(function(item, i, arr) {
-		ctx.lineTo(item[0], item[1]);
+	ctx.moveTo(points[0].x, points[0].y);
+
+	points.forEach(function(item, i, arr){
+		ctx.lineTo(item.x, item.y);
 	});
 
-	ctx.fill();
+	ctx.stroke();
 	ctx.closePath();
-}
 
-var draw = function() {
-	blocks.forEach(function(item, i, arr){
-		arr[i].draw();
+	points.forEach(function(item, i, arr){
+		ctx.beginPath();
+		ctx.lineWidth = 1;
+		ctx.arc(item.x, item.y, 5, 0, 2 * Math.PI, true);
+		ctx.strokeStyle = "#fff";
+		ctx.stroke();
+		ctx.closePath();
 	});
 };
 
-blockCreate();
+pointsCreate();
 init();
-draw();
+pointsDraw();
 
 document.onclick = function(e){
-	newPointsCreate();
-	pointsMove();
+	pointsMove(e.clientX, e.clientY);
 };
+
+
+
