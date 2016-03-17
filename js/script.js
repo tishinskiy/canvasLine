@@ -1,4 +1,4 @@
-canvas = document.getElementById("canvas");
+var canvas = document.getElementById("canvas");
 
 var w = canvas.clientWidth;
 var h = canvas.clientHeight;
