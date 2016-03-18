@@ -14,6 +14,7 @@ $("#canvas").mousemove(function(event) {
 
 
 
+
 	var aRad = angleValue(points[Math.round(points.length / 2)]);
 
 	ctx.clearRect(20, 30, 200, 20);
@@ -43,7 +44,7 @@ var pointProto = {
 }
 
 var pointsCreate = function(){
-	for (var i = -w; i <= w*2; i = i + blockWidth) {
+	for (var i = 0; i <= w; i = i + blockWidth) {
 		points.push(Object.create(pointProto).constructor(i, centerLine));
 	}
 }
@@ -55,62 +56,67 @@ var pointsMove = function() {
 	cp.y = getRandomInt(centerLine-blockWidth/2, centerLine+blockWidth/2);
 	var angle = anglePoints(points[cpId-1], points[cpId]);
 
+	var newPointPosition = function(i) {
 
-	for (var i = cpId+1; i < points.length; i++) {
+		var alfa = getRandomInt(75, 125);
+		var bwr = getRandomInt(blockWidth*0.5, blockWidth*1.5)
+		if (angle < -45) {rotation = true;}
+		if (angle > 45) {rotation = false;}
 
-		var alfa = getRandomInt(75, 135);
-		if (angle < -45) {
-			rotation = true;
-		}
-		if (angle > 45) {
-			rotation = false;
-		}
-		
-		if(rotation == true) {
-			angle = angle + (180 - alfa);
-		}
+		if (i > cpId) {
 
-		if(rotation == false) {
-			angle = angle - (180 - alfa);
+			if(rotation == true) {angle = angle + (180 - alfa);}
+			if(rotation == false) {angle = angle - (180 - alfa);}
+
+			points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*bwr;
+			points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*bwr;
 		}
 
-		points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.5, blockWidth*1.5))*2;
-		points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.5, blockWidth*1.5);
-		
-	}
-	angle = angle = anglePoints(points[cpId-1], points[cpId]);
+		if (i < cpId) {
 
-	for (var i = cpId -1; i > 0; i--) {
-		var alfa = getRandomInt(75, 135);
-		if (angle < -45) {
-			rotation = true;
-		}
-		if (angle > 45) {
-			rotation = false;
-		}
-		
-		if(rotation == true) {
-			angle = angle + (180 - alfa);
+			if(rotation == true) {angle = angle - (alfa - 180);}
+			if(rotation == false) {angle = angle + (alfa - 180);}
+
+			points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*bwr;
+			points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*bwr;
 		}
 
-		if(rotation == false) {
-			angle = angle - (180 - alfa);
-		}
-
-		points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.5, blockWidth*1.5))*2;
-		points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.5, blockWidth*1);
+		points[i].angle = angle;
 	}
 
-
-
-
-
-
+	for (var i = cpId+1; i < points.length; i++) {newPointPosition(i);}
+	angle = anglePoints(points[cpId], points[cpId+1]);
+	for (var i = cpId; i > 0; i--) {newPointPosition(i);}
 	pointsDraw();
+
+	blockCreate(cp, points[cpId+1]);
 }
 
+var blockCreate = function(p1, p2) {
+	console.log(p1.angle);
+	var k1 = Math.tan(-p1.angle*180/Math.PI);
+	var x1 = p1.x;
+	var y1 = p1.y;
+
+	var k2 = Math.tan(-p2.angle*180/Math.PI);
+	var x2 = p2.x;
+	var y2 = p2.y;
+
+	var a1 = -k1;
+	var a2 = -k2;
+	var b1 = b2 = 1;
+	var c1 = k1*x1-y1;
+	var c2 = k2*x2-y2;
+
+	
+
+	var x = -((c1*b2 - c2*b1)/(a1*b2 - a2*b1));
+	var y = -((a1*c2 - a2*c1)/(a1*b2 - a2*b1));
+	console.log(x,y);
+};
+
 function angleValue(obj) {
-	var a =  (Math.atan((yMouse - obj.y) / (xMouse - obj.x)));
+	var a = (Math.atan((yMouse - obj.y) / (xMouse - obj.x)));
 	if( (xMouse - obj.x) < 0 ) { a = Math.PI + a; }
 	if( ((xMouse - obj.x) < 0) && ((yMouse - obj.y) < 0) ) {
 		a = -(2* Math.PI - a);
@@ -164,6 +170,7 @@ pointsDraw();
 
 document.onclick = function(e){
 	pointsMove(e.clientX, e.clientY);
+	console.log(points);
 };
 
 
