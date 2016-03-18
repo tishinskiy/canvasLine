@@ -58,7 +58,7 @@ var pointsMove = function() {
 
 	for (var i = cpId+1; i < points.length; i++) {
 
-		var alfa = getRandomInt(75, 135);
+		var alfa = getRandomInt(75, 125);
 		if (angle < -45) {
 			rotation = true;
 		}
@@ -74,14 +74,14 @@ var pointsMove = function() {
 			angle = angle - (180 - alfa);
 		}
 
-		points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.5, blockWidth*1.5))*2;
-		points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.5, blockWidth*1.5);
+		points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.7, blockWidth*1.5))*2;
+		points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.7, blockWidth*1.5);
 		
 	}
 	angle = angle = anglePoints(points[cpId-1], points[cpId]);
 
 	for (var i = cpId -1; i > 0; i--) {
-		var alfa = getRandomInt(75, 135);
+		var alfa = getRandomInt(75, 125);
 		if (angle < -45) {
 			rotation = true;
 		}
@@ -90,15 +90,15 @@ var pointsMove = function() {
 		}
 		
 		if(rotation == true) {
-			angle = angle + (180 - alfa);
+			angle = angle - (alfa - 180);
 		}
 
 		if(rotation == false) {
-			angle = angle - (180 - alfa);
+			angle = angle + (alfa - 180);
 		}
 
-		points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.5, blockWidth*1.5))*2;
-		points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.5, blockWidth*1);
+		points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*(getRandomInt(blockWidth*0.7, blockWidth*1.5))*2;
+		points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*getRandomInt(blockWidth*0.7, blockWidth*1);
 	}
 
 
