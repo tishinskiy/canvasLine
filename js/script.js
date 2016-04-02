@@ -112,18 +112,23 @@ var pointsMove = function() {
 
 	// blockCreate(testPoint_1, testPoint_2);
 	blocks = [];
-	for (var i = 1; i < points.length; i++) {
+	for (var i = 1; i < points.length; i=i+2) {
 		blockCreate(i);
+		blockDraw(blocks[i-1]);
 	}
-	for (var i = 0; i < blocks.length; i++) {
-		blockDraw(blocks[i]);
+	for (var i = 2; i < points.length; i=i+2) {
+		blockCreateLight(i);
+		blockDraw(blocks[i-1]);
 	}
+	// for (var i = 0; i < blocks.length; i++) {
+	// }
 	// console.log(cp);
 }
 
 var blockDraw = function(obj) {
 	// console.log(obj);
-	ctx.fillStyle = "rgba(255, 255, 255, 0.5";
+	if(blocks.indexOf(obj) & 1) {ctx.fillStyle = "rgba(255, 255, 255, 0.9";}
+	else {ctx.fillStyle = "rgba(200, 200, 200, 0.9";}
 	ctx.strokeStyle = "transparent";
 	ctx.lineWidth = 1;
 	ctx.beginPath();
@@ -139,8 +144,7 @@ var blockDraw = function(obj) {
 }
 
 var intersection = function(p1, p2, angle1, angle2) {
-	console.log(p1);
-	console.log(p2);
+
 	var k1 = Math.tan(angle1*Math.PI/180);
 	var k2 = Math.tan(angle2*Math.PI/180);
 	var x1 = p1.x;
@@ -182,26 +186,22 @@ var intersection = function(p1, p2, angle1, angle2) {
 
 }
 
-var blockCreate = function(i) {
+var blockCreateLight = function(i) {
 	var a = points[i];
 	var b = points[i-1];
+	var A, B, C, D;
 
 	var blockPointPosition = function(point, angle){
-
 		var x = point.x + blockHeight * Math.cos(angle*Math.PI/180);
 		var y = point.y + blockHeight * Math.sin(angle*Math.PI/180);
-
 		return {x:x, y:y};
 	}
 
-	var A, B, C, D;
-	console.log(i);
 	if(i == 1) {
 		A = blockPointPosition(b, a.angle-90);
 		D = blockPointPosition(b, a.angle+90);;
 	}
 	else {
-		console.log(blocks[i-2]);
 		A = blocks[i-2].points[2];
 		D = blocks[i-2].points[1];
 	}
@@ -211,12 +211,67 @@ var blockCreate = function(i) {
 		C = blockPointPosition(a, a.angle+90);;
 	}
 	else {
-		B = intersection(A, blockPointPosition(points[i+1], points[i+1].angle+90), points[i].angle, points[i+1].angle);
-		C = intersection(D, blockPointPosition(points[i+1], points[i+1].angle-90), points[i].angle, points[i+1].angle);
+		B = blocks[i].points[3];
+		C = blocks[i].points[0];
 	}
 
 
-	blocks.push(Object.create(blockProto).constructor(A, B, C, D));
+	blocks[i-1] = Object.create(blockProto).constructor(A, B, C, D);
+
+};
+var blockCreate = function(i) {
+	var a = points[i];
+	var b = points[i-1];
+	var A, B, C, D;
+
+	var blockPointPosition = function(point, angle){
+		var x = point.x + blockHeight * Math.cos(angle*Math.PI/180);
+		var y = point.y + blockHeight * Math.sin(angle*Math.PI/180);
+		return {x:x, y:y};
+	}
+
+	if(i == 1) {
+		A = blockPointPosition(b, a.angle-90);
+		D = blockPointPosition(b, a.angle+90);;
+	}
+	else {
+		A = intersection(
+				blockPointPosition(a, a.angle-90), 
+				blockPointPosition(points[i-1],points[i-1].angle+90), 
+				points[i].angle, 
+				points[i-1].angle
+			);
+		D = intersection(
+				blockPointPosition(a, a.angle+90), 
+				blockPointPosition(points[i-1], points[i-1].angle-90), 
+				points[i].angle, 
+				points[i-1].angle
+			);
+	}
+
+	if(i == points.length-1) {
+		B = blockPointPosition(a, a.angle-90);;
+		C = blockPointPosition(a, a.angle+90);;
+	}
+	else {
+		B = intersection(
+				A, 
+				blockPointPosition(points[i+1], 
+				points[i+1].angle+90), 
+				points[i].angle, 
+				points[i+1].angle
+			);
+		C = intersection(
+				D, 
+				blockPointPosition(points[i+1], 
+				points[i+1].angle-90), 
+				points[i].angle, 
+				points[i+1].angle
+			);
+	}
+
+
+	blocks[i-1] = Object.create(blockProto).constructor(A, B, C, D);
 
 };
 
