@@ -6,13 +6,15 @@ var h = canvas.clientHeight;
 var xMouse = 0;
 var yMouse = 0;
 
-var blockWidth =100;
-var blockHeight = Math.round(blockWidth/5);
+var blockWidth =15;
+var blockHeight = Math.round(blockWidth/15);
 
 
 $("#canvas").mousemove(function(event) {
+	pointsMove();
 	xMouse = event.pageX - $(this).offset().left;
 	yMouse = event.pageY - $(this).offset().top;
+
 
 
 
@@ -79,7 +81,7 @@ var pointsMove = function() {
 
 	var newPointPosition = function(i) {
 
-		var alfa = getRandomInt(75, 125);
+		var alfa = getRandomInt(100, 140);
 		var bwr = getRandomInt(blockWidth*0.75, blockWidth*1.5)
 		if (angle < -45) {rotation = true;}
 		if (angle > 45) {rotation = false;}
@@ -127,8 +129,8 @@ var pointsMove = function() {
 
 var blockDraw = function(obj) {
 	// console.log(obj);
-	if(blocks.indexOf(obj) & 1) {ctx.fillStyle = "rgba(255, 255, 255, 0.9";}
-	else {ctx.fillStyle = "rgba(200, 200, 200, 0.9";}
+	if(blocks.indexOf(obj) & 1) {ctx.fillStyle = "#51C0FF";}
+	else {ctx.fillStyle = "#96FFF6";}
 	ctx.strokeStyle = "transparent";
 	ctx.lineWidth = 1;
 	ctx.beginPath();
@@ -136,9 +138,12 @@ var blockDraw = function(obj) {
 	obj.points.forEach(function(item, i, arr) {
 		// console.log(item);
 		ctx.lineTo(item.x, item.y);
-		ctx.fillRect(item.x-1, item.y-1, 3, 3);
+		// ctx.fillRect(item.x-1, item.y-1, 3, 3);
 	});
-
+	ctx.shadowOffsetX = 5;
+	ctx.shadowOffsetY = 5;
+	ctx.shadowBlur = 10;
+	ctx.shadowColor = "#F6FDFF";
 	ctx.fill();
 	ctx.closePath();
 }
@@ -301,27 +306,27 @@ var init = function() {
 var pointsDraw = function() {
 	ctx.clearRect(0, 0, w, h);
 
-	ctx.beginPath();
-	ctx.lineWidth = 1;
-	ctx.strokeStyle = "#3BFF5B";
+	// ctx.beginPath();
+	// ctx.lineWidth = 1;
+	// ctx.strokeStyle = "#3BFF5B";
 
-	ctx.moveTo(points[0].x, points[0].y);
+	// ctx.moveTo(points[0].x, points[0].y);
 
-	points.forEach(function(item, i, arr){
-		ctx.lineTo(item.x, item.y);
-	});
+	// points.forEach(function(item, i, arr){
+	// 	ctx.lineTo(item.x, item.y);
+	// });
 
-	ctx.stroke();
-	ctx.closePath();
+	// ctx.stroke();
+	// ctx.closePath();
 
-	points.forEach(function(item, i, arr){
-		ctx.beginPath();
-		ctx.lineWidth = 1;
-		ctx.arc(item.x, item.y, 5, 0, 2 * Math.PI, true);
-		ctx.strokeStyle = "#fff";
-		ctx.stroke();
-		ctx.closePath();
-	});
+	// points.forEach(function(item, i, arr){
+	// 	ctx.beginPath();
+	// 	ctx.lineWidth = 1;
+	// 	ctx.arc(item.x, item.y, 5, 0, 2 * Math.PI, true);
+	// 	ctx.strokeStyle = "#fff";
+	// 	ctx.stroke();
+	// 	ctx.closePath();
+	// });
 };
 
 pointsCreate();
