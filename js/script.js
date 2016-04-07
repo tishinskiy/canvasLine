@@ -51,7 +51,7 @@ var pointsMove = function() {
 	var newPointPosition = function(i) {
 
 		var alfa = getRandomInt(70, 130);
-		var bwr = getRandomInt(blockWidth*0.75, blockWidth*1.75)
+		var bwr = getRandomInt(blockWidth*0.75, blockWidth*1.75);
 
 		if (angle < -45) {rotation = true;}
 		if (angle > 45) {rotation = false;}
@@ -133,8 +133,8 @@ var blockPointPosition = function(point, angle){
 }
 
 var blockCreateLight = function(i) {
-	var a = points[i];
-	var b = points[i-1];
+	var a = current[i];
+	var b = current[i-1];
 	var A, B, C, D;
 
 
@@ -147,7 +147,7 @@ var blockCreateLight = function(i) {
 		D = blocks[i-2].points[1];
 	}
 
-	if(i == points.length-1) {
+	if(i == current.length-1) {
 		B = blockPointPosition(a, a.angle-90);;
 		C = blockPointPosition(a, a.angle+90);;
 	}
@@ -161,9 +161,9 @@ var blockCreateLight = function(i) {
 
 };
 var blockCreate = function(i) {
-	var a = points[i];
-	var b = points[i-1];
-	var c = points[i+1];
+	var a = current[i];
+	var b = current[i-1];
+	var c = current[i+1];
 	var A, B, C, D;
 
 	if ((a.angle == b.angle) || (i == 1)) {
@@ -175,18 +175,18 @@ var blockCreate = function(i) {
 		A = intersection(
 				blockPointPosition(a, a.angle-90), 
 				blockPointPosition(b, b.angle+90), 
-				points[i].angle, 
+				current[i].angle, 
 				b.angle
 			);
 		D = intersection(
 				blockPointPosition(a, a.angle+90), 
 				blockPointPosition(b, b.angle-90), 
-				points[i].angle, 
+				current[i].angle, 
 				b.angle
 			);
 	}
 
-	if((i == points.length-1) || (a.angle == c.angle)) {
+	if((i == current.length-1) || (a.angle == c.angle)) {
 		B = blockPointPosition(a, a.angle-90);
 		C = blockPointPosition(a, a.angle+90);
 	}
@@ -194,16 +194,16 @@ var blockCreate = function(i) {
 	else {
 		B = intersection(
 			A, 
-			blockPointPosition(points[i+1], 
+			blockPointPosition(current[i+1], 
 			c.angle+90), 
-			points[i].angle, 
+			current[i].angle, 
 			c.angle
 		);
 		C = intersection(
 			D, 
 			blockPointPosition(c, 
 			c.angle-90), 
-			points[i].angle, 
+			current[i].angle, 
 			c.angle
 		);
 	}
@@ -219,6 +219,27 @@ function anglePoints(p1, p2) {
 	return a*180/Math.PI;
 }
 
+var lineMove = function() {
+	var shag = 30;
+	var j = 0;
+	
+	var kadr = setInterval(function(){
+		clearInterval(kadr-1);
+		for (var i = current.length - 1; i >= 0; i--) {
+			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag -j);
+			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag -j);
+			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
+		}
+		console.log(j);
+		j++;
+		DrowLine();
+
+		if (j == shag) {
+			clearInterval(kadr);
+		}
+	}, 20);
+}
+
 var init = function() {
 	ctx = canvas.getContext('2d');
 	canvas.width = w;
@@ -228,8 +249,9 @@ var init = function() {
 pointsCreate();
 init();
 DrowLine();
-// console.log(blocks);
+
 document.onclick = function(e){
 	pointsMove();
-	console.log(current);
+	lineMove()
+
 };
