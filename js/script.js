@@ -8,8 +8,6 @@ var h = canvas.clientHeight;
 
 var blockWidth =100;
 var blockHeight = Math.round(blockWidth / 2.5);
-
-
 var centerLine = Math.round(h / 2 );
 
 var getRandomInt = function(min, max) {
@@ -17,7 +15,7 @@ var getRandomInt = function(min, max) {
 }
 
 var points= [];
-var current= [];
+var current = [];
 
 var pointProto = {
 	constructor:function(x, y){
@@ -27,7 +25,7 @@ var pointProto = {
 		return this
 	}
 }
-var blocks= [];
+var blocks = [];
 
 blockProto = {
 	constructor:function(a,b,c,d){
@@ -37,7 +35,7 @@ blockProto = {
 }
 
 var pointsCreate = function(){
-	for (var i = -w; i <= w*2; i = i + blockWidth) {
+	for (var i = 0; i <= w; i = i + blockWidth) {
 		points.push(Object.create(pointProto).constructor(i, blockHeight/2));
 		current.push(Object.create(pointProto).constructor(i, blockHeight/2));
 	}
@@ -48,12 +46,13 @@ var pointsMove = function() {
 	var cp = points[cpId];
 	var rotation = true;
 	cp.y = getRandomInt(centerLine-blockWidth/2, centerLine+blockWidth/2);
-	var angle = anglePoints(points[cpId-1], points[cpId]);
+	var angle = anglePoints(points[cpId-1], cp);
 
 	var newPointPosition = function(i) {
 
-		var alfa = getRandomInt(70, 130);
-		var bwr = getRandomInt(blockWidth*0.75, blockWidth*1.75)
+		var alfa = getRandomInt(90, 90);
+		var bwr = getRandomInt(blockWidth*1.75, blockWidth*1.75);
+
 		if (angle < -45) {rotation = true;}
 		if (angle > 45) {rotation = false;}
 
@@ -116,16 +115,16 @@ var DrowLine = function() {
 	}
 }
 
+var lineAngle = function(p1, p2, k1, k2) {
+	return  Math.abs(Math.atan(((k1 * (-1)) - (k2 * (-1))) / ((k1 * k2) + ((-1) * (-1))))*(180/Math.PI));
+}
 
-var intersection = function(p1, p2, angle1, angle2) {
+var intersection = function(p1, p2, k1, k2) {
 
-	var k1 = Math.tan(angle1*Math.PI/180);
-	var k2 = Math.tan(angle2*Math.PI/180);
 	var x = (((p1.x*k1-p1.y)*(-1) - (p2.x*k2-p2.y)*(-1))/(k1*(-1) - k2*(-1)));
 	var y = ((k1*(p2.x*k2-p2.y) - (p1.x*k1-p1.y)*k2)/(k1*(-1) - k2*(-1)));
 
 	return {x:x, y:y};
-
 }
 
 var blockPointPosition = function(point, angle){
@@ -139,7 +138,24 @@ var blockPointPosition = function(point, angle){
 var blockCreateLight = function(i) {
 	var a = current[i];
 	var b = current[i-1];
+	var c = current[i+1];
+	var k1 = Math.tan(a.angle*Math.PI/180);
+	var k2 = Math.tan(b.angle*Math.PI/180);
 	var A, B, C, D;
+
+	var kz = lineAngle(a, b, k1, k2);
+	var kq;
+
+	console.log("KZ = "+kz);
+
+	if (c) {
+		k3 = Math.tan(c.angle*Math.PI/180);
+		kq = lineAngle(a, c, k1, k3);
+		console.log("kq = "+kq);
+		if(kq < 45) {
+			q = -1; 
+		}
+	}
 
 
 	if(i == 1) {
@@ -147,8 +163,16 @@ var blockCreateLight = function(i) {
 		D = blockPointPosition(b, a.angle+90);;
 	}
 	else {
-		A = blocks[i-2].points[2];
-		D = blocks[i-2].points[1];
+
+		if(kz < 45) {
+			A = blocks[i-2].points[1];
+			D = blocks[i-2].points[2];
+		}
+			
+		else {
+			A = blocks[i-2].points[2];
+			D = blocks[i-2].points[1];
+		}
 	}
 
 	if(i == current.length-1) {
@@ -156,8 +180,15 @@ var blockCreateLight = function(i) {
 		C = blockPointPosition(a, a.angle+90);;
 	}
 	else {
-		B = blocks[i].points[3];
-		C = blocks[i].points[0];
+		if(kq < 45) {
+			B = blocks[i].points[0];
+			C = blocks[i].points[3];
+		}
+
+		else {
+			B = blocks[i].points[3];
+			C = blocks[i].points[0];
+		}
 	}
 
 
@@ -169,28 +200,48 @@ var blockCreate = function(i) {
 	var b = current[i-1];
 	var c = current[i+1];
 	var A, B, C, D;
+	var k1 = Math.tan(a.angle*Math.PI/180);
+	var k2 = Math.tan(b.angle*Math.PI/180);
+	var k3;
+	var z = 1;
+	var q = 1;
+	var kz = lineAngle(a, b, k1, k2);
+	var kq;
 
-	if ((a.angle == b.angle) || (i == 1)) {
+	console.log("kz = "+kz);
+
+	if(kz < 45) { z = -1; }
+
+	if (c) {
+		k3 = Math.tan(c.angle*Math.PI/180);
+		kq = lineAngle(a, c, k1, k3);
+		console.log("kq = "+kq);
+		if(kq < 45) {
+			q = -1; 
+		}
+	}
+
+	if ((kz == 0) || (i == 1)) {
 		A = blockPointPosition(b, a.angle-90);
 		D = blockPointPosition(b, a.angle+90);
 	}
-	else {
 
+	else {
 		A = intersection(
-			blockPointPosition(a, a.angle-90), 
-			blockPointPosition(b, b.angle+90), 
-			current[i].angle, 
-			b.angle
+			blockPointPosition(a, a.angle-90*z), 
+			blockPointPosition(b, b.angle+90*z), 
+			k1, 
+			k2
 		);
 		D = intersection(
-			blockPointPosition(a, a.angle+90), 
-			blockPointPosition(b, b.angle-90), 
-			current[i].angle, 
-			b.angle
+			blockPointPosition(a, a.angle+90*z), 
+			blockPointPosition(b, b.angle-90*z), 
+			k1, 
+			k2
 		);
 	}
 
-	if((i == current.length-1) || (a.angle == c.angle)) {
+	if((i == current.length-1) || (kq == 0)) {
 		B = blockPointPosition(a, a.angle-90);
 		C = blockPointPosition(a, a.angle+90);
 	}
@@ -198,22 +249,19 @@ var blockCreate = function(i) {
 	else {
 		B = intersection(
 			A, 
-			blockPointPosition(current[i+1], 
-			c.angle+90), 
-			current[i].angle, 
-			c.angle
+			blockPointPosition(c, c.angle+90*q), 
+			k1,
+			k3
 		);
 		C = intersection(
 			D, 
-			blockPointPosition(c, 
-			c.angle-90), 
-			current[i].angle, 
-			c.angle
+			blockPointPosition(c, c.angle-90*q), 
+			k1, 
+			k3
 		);
 	}
 
 	blocks[i-1] = Object.create(blockProto).constructor(A, B, C, D);
-
 };
 
 
@@ -225,22 +273,25 @@ function anglePoints(p1, p2) {
 }
 
 var lineMove = function() {
-	var j = 0;
-	var shag = 20;
 
-	var timer = setInterval(function(){
-		for (var i = 0; i < current.length; i++) {
-			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag-j);
-			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag-j);
-			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag-j);
+	var shag = 50;
+	var j = 0;
+	
+	var kadr = setInterval(function(){
+		clearInterval(kadr-1);
+		for (var i = current.length - 1; i >= 0; i--) {
+			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag -j);
+			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag -j);
+			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
 		}
+		console.log(j);
+		j++;
 		DrowLine();
 
-		console.log(j++);
 		if (j == shag) {
-			clearInterval(timer);
+			clearInterval(kadr);
 		}
-	},30);
+	}, 300);
 }
 
 var init = function() {
@@ -252,11 +303,8 @@ var init = function() {
 pointsCreate();
 init();
 DrowLine();
-console.log(blocks);
+
 document.onclick = function(e){
 	pointsMove();
-	lineMove();
+	lineMove()
 };
-
-
-
