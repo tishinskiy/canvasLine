@@ -5,7 +5,7 @@ var h = canvas.clientHeight;
 
 var blockWidth =100;
 var blockHeight = Math.round(blockWidth / 2.5);
-var lineColor = "#60FB0C";
+var lineColor = "#ffffff";
 var angleMin = 75;
 var angleMax = 125;
 
@@ -32,6 +32,7 @@ var pointProto = {
 		this.x = x;
 		this.y = y;
 		this.angle = 0;
+		this.width = blockWidth;
 		return this
 	}
 }
@@ -45,7 +46,7 @@ blockProto = {
 }
 
 var pointsCreate = function(){
-	for (var i = -w; i <= w*2; i = i + blockWidth) {
+	for (var i = 0; i <= w; i = i + blockWidth) {
 		points.push(Object.create(pointProto).constructor(i, blockHeight/2));
 		current.push(Object.create(pointProto).constructor(i, blockHeight/2));
 	}
@@ -61,7 +62,9 @@ var pointsMove = function() {
 	var newPointPosition = function(i) {
 
 		var alfa = getRandomInt(angleMin, angleMax);
-		var bwr = getRandomInt(blockWidth*0.75, blockWidth*1.75);
+		// var bwr = getRandomInt(blockWidth*0.75, blockWidth*1.75);
+
+		points[i].width = getRandomInt(blockWidth*0.75, blockWidth*1.75);
 
 		if (angle < -45) {rotation = true;}
 		if (angle > 45) {rotation = false;}
@@ -71,8 +74,8 @@ var pointsMove = function() {
 			if(rotation == true) {angle = angle + (180 - alfa);}
 			if(rotation == false) {angle = angle - (180 - alfa);}
 
-			points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*bwr;
-			points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*bwr;
+			points[i].x = points[i-1].x + Math.cos((angle/180)*Math.PI)*points[i].width;
+			points[i].y = points[i-1].y + Math.sin((angle/180)*Math.PI)*points[i].width;
 		}
 
 		if (i <= cpId) {
@@ -80,20 +83,17 @@ var pointsMove = function() {
 			if(rotation == true) {angle = angle - (alfa - 180);}
 			if(rotation == false) {angle = angle + (alfa - 180);}
 
-			points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*bwr;
-			points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*bwr;
+			points[i-1].x = points[i].x - Math.cos((angle/180)*Math.PI)*points[i].width;
+			points[i-1].y = points[i].y - Math.sin((angle/180)*Math.PI)*points[i].width;
 		}
 
 		points[i].angle = angle;
 	}
 
 	for (var i = cpId; i < points.length; i++) {newPointPosition(i);}
-
 	angle = anglePoints(points[cpId-1], points[cpId]);
-
 	for (var i = cpId-1; i > 0; i--) {newPointPosition(i);}
-		
-	// DrowLine();
+
 }
 
 var DrowLine = function() {
@@ -157,14 +157,14 @@ var blockCreate = function(i) {
 	var k3;
 	var z = 1;
 	var q = 1;
-	var kz = lineAngle(a, b, k1, k2);
+	var kz = lineAngle(a, b);
 	var kq;
 
 	if(kz > angleMax) {z = -1;}
 
 	if (c) {
 		k3 = Math.tan(c.angle*Math.PI/180);
-		kq = lineAngle(a, c, k1, k3);
+		kq = lineAngle(a, c);
 		if(kq > angleMax) {q = -1;}
 	}
 
@@ -251,18 +251,23 @@ function anglePoints(p1, p2) {
 }
 
 
-var lineMove = function(stop) {
-
-	var shag = 20;
+var lineMove = function() {
+	pointsMove();
+	var shag = 15;
 	var j = 0;
+
+	var cpId = Math.round(points.length / 2)
 
 	var kadr = setInterval(function(){
 		clearInterval(kadr-1);
+
 		for (var i = current.length - 1; i >= 0; i--) {
+			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
+			current[i].width = current[i].width + (points[i].width - current[i].width) / (shag -j);
 			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag -j);
 			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag -j);
-			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
 		}
+
 		color2 = "rgba("+(rgb[0]-(50/(shag-j)))+", "+(rgb[1]-(50/(shag-j)))+", "+(rgb[2]-(50/(shag-j)))+", 1)";
 
 		console.log("shag = "+j);
@@ -272,8 +277,45 @@ var lineMove = function(stop) {
 		if (j == shag) {
 			clearInterval(kadr);
 		}
+	}, 30);
+	stage = 2;
+}
+
+var lineStop = function() {
+	setInterval(function(){
+		for (var i = current.length - 1; i >= 0; i--) {
+			current[i].angle++;
+			DrowLine();
+		}
+		
 	}, 10);
 }
+
+var lineAction = (function() {
+	var shag = 20;
+	var cpId = Math.round(points.length / 2);
+	var j = 0;
+	// pointsMove();
+
+	return function(){
+
+		for (var i = current.length - 1; i >= 0; i--) {
+			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
+			current[i].width = current[i].width + (points[i].width - current[i].width) / (shag -j);
+			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag -j);
+			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag -j);
+		}
+		
+		// color2 = "rgba("+(rgb[0]-(50/(shag-j)))+", "+(rgb[1]-(50/(shag-j)))+", "+(rgb[2]-(50/(shag-j)))+", 1)";
+
+		console.log("shag = "+j);
+		console.log("action = "+j);
+		console.log(current);
+		j++;
+		DrowLine();
+	}
+	stage = 2;
+}());
 
 var init = function() {
 	ctx = canvas.getContext('2d');
@@ -285,8 +327,21 @@ pointsCreate();
 init();
 DrowLine();
 
+var stage = 0;
+
 document.onclick = function(e){
-	pointsMove();
-	lineMove()
+	if (stage == 2) {
+		// pointsMove();
+		console.log("pointsMove");
+		pointsMove();
+		stage = 1;
+	}
+	if (stage == 1) {
+		// lineStop();
+		lineAction();
+	}
+	if (stage == 0) {
+		lineMove();
+	}
 };
 
