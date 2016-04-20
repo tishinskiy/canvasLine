@@ -5,7 +5,7 @@ var h = canvas.clientHeight;
 
 var blockWidth =100;
 var blockHeight = Math.round(blockWidth / 2.5);
-var lineColor = "#ffffff";
+var lineColor = "#FFB2AE";
 var angleMin = 75;
 var angleMax = 125;
 
@@ -46,7 +46,7 @@ blockProto = {
 }
 
 var pointsCreate = function(){
-	for (var i = 0; i <= w; i = i + blockWidth) {
+	for (var i = -w; i <= w*2; i = i + blockWidth) {
 		points.push(Object.create(pointProto).constructor(i, blockHeight/2));
 		current.push(Object.create(pointProto).constructor(i, blockHeight/2));
 	}
@@ -128,23 +128,23 @@ var DrowLine = function() {
 
 	// help circle draw
 
-	current.forEach(function(item, i, arr){
-		ctx.beginPath();
-		ctx.lineWidth = 1;
-		ctx.arc(item.x, item.y, 5, 0, 2*Math.PI, true);
-		ctx.strokeStyle = "red";
-		ctx.stroke();
-		ctx.closePath();
-	});
+	// current.forEach(function(item, i, arr){
+	// 	ctx.beginPath();
+	// 	ctx.lineWidth = 1;
+	// 	ctx.arc(item.x, item.y, 5, 0, 2*Math.PI, true);
+	// 	ctx.strokeStyle = "red";
+	// 	ctx.stroke();
+	// 	ctx.closePath();
+	// });
 
-	ctx.beginPath();
-	ctx.lineWidth = 1;
-	ctx.strokeStyle = "#03BE3C";
-	current.forEach(function(item, i, arr){
-		ctx.lineTo(item.x, item.y);
-	});
-	ctx.stroke();
-	ctx.closePath();
+	// ctx.beginPath();
+	// ctx.lineWidth = 1;
+	// ctx.strokeStyle = "#03BE3C";
+	// current.forEach(function(item, i, arr){
+	// 	ctx.lineTo(item.x, item.y);
+	// });
+	// ctx.stroke();
+	// ctx.closePath();
 }
 
 var lineAngle = function(p1, p2) {
@@ -272,6 +272,7 @@ function anglePoints(p1, p2) {
 
 
 var lineMove = function() {
+	color2 = "rgba("+(rgb[0]-50)+", "+(rgb[1]-50)+", "+(rgb[2]-50)+", 1)";
 	pointsMove();
 	var shag = 50;
 	var j = 0;
@@ -282,23 +283,44 @@ var lineMove = function() {
 		clearInterval(kadr-1);
 
 		for (var i = current.length - 1; i >= 0; i--) {
-			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
-			current[i].width = current[i].width + (points[i].width - current[i].width) / (shag -j);
+
 			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag -j);
 			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag -j);
 		}
 
-		color2 = "rgba("+(rgb[0]-(50/(shag-j)))+", "+(rgb[1]-(50/(shag-j)))+", "+(rgb[2]-(50/(shag-j)))+", 1)";
+		for (var i = current.length - 1; i > 0; i--) {
 
-		console.log("shag = "+j);
+			var a = Math.atan((current[i].y - current[i-1].y) / (current[i].x - current[i-1].x));
+
+			if ((current[i].x - current[i-1].x) < 0) {
+
+				a = Math.PI + a;
+
+				if ((current[i].x - current[i-1].x) < 0) {
+					a = -(2*Math.PI - a);
+				}
+
+			}
+
+			// console.log(a*180/Math.PI);
+
+			current[i].angle = a*180/Math.PI;
+		}
+
+		// color2 = "rgba("+(rgb[0]-(50/(shag-j)))+", "+(rgb[1]-(50/(shag-j)))+", "+(rgb[2]-(50/(shag-j)))+", 1)";
+
+		// console.log("shag = "+j);
 		j++;
 		DrowLine();
 
 		if (j == shag) {
 			clearInterval(kadr);
+			// console.log(current);
+			setTimeout(function(){lineMove()},300);
 		}
-	}, 100);
-	stage = 2;
+	}, 10);
+	// stage = 2;
+	// console.log(points);
 }
 
 var lineStop = function() {
