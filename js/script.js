@@ -125,6 +125,26 @@ var DrowLine = function() {
 		blockCreate(i);
 		blockDraw(blocks[i-1]);
 	}
+
+	// help circle draw
+
+	current.forEach(function(item, i, arr){
+		ctx.beginPath();
+		ctx.lineWidth = 1;
+		ctx.arc(item.x, item.y, 5, 0, 2*Math.PI, true);
+		ctx.strokeStyle = "red";
+		ctx.stroke();
+		ctx.closePath();
+	});
+
+	ctx.beginPath();
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = "#03BE3C";
+	current.forEach(function(item, i, arr){
+		ctx.lineTo(item.x, item.y);
+	});
+	ctx.stroke();
+	ctx.closePath();
 }
 
 var lineAngle = function(p1, p2) {
@@ -253,7 +273,7 @@ function anglePoints(p1, p2) {
 
 var lineMove = function() {
 	pointsMove();
-	var shag = 15;
+	var shag = 50;
 	var j = 0;
 
 	var cpId = Math.round(points.length / 2)
@@ -277,7 +297,7 @@ var lineMove = function() {
 		if (j == shag) {
 			clearInterval(kadr);
 		}
-	}, 30);
+	}, 100);
 	stage = 2;
 }
 
