@@ -3,11 +3,11 @@ var canvas = document.getElementById("canvas");
 var w = canvas.clientWidth;
 var h = canvas.clientHeight;
 
-var blockWidth =100;
-var blockHeight = Math.round(blockWidth / 2.5);
+var blockWidth =250;
+var blockHeight = Math.round(blockWidth / 3);
 var lineColor = "#FFB2AE";
-var angleMin = 75;
-var angleMax = 125;
+var angleMin = 60;
+var angleMax = 140;
 
 var rgbColor = function(hex) {
 	return [parseInt(hex.substring(1,3),16), parseInt(hex.substring(3,5),16), parseInt(hex.substring(5,7),16)];
@@ -180,7 +180,7 @@ var blockCreate = function(i) {
 	var kz = lineAngle(a, b);
 	var kq;
 
-	if(kz > angleMax) {z = -1;}
+	if(kz > angleMax+5) {z = -1;}
 
 	if (c) {
 		k3 = Math.tan(c.angle*Math.PI/180);
@@ -316,7 +316,7 @@ var lineMove = function() {
 		if (j == shag) {
 			clearInterval(kadr);
 			// console.log(current);
-			setTimeout(function(){lineMove()},300);
+			// setTimeout(function(){lineMove()},300);
 		}
 	}, 10);
 	// stage = 2;
@@ -371,19 +371,51 @@ DrowLine();
 
 var stage = 0;
 
-document.onclick = function(e){
-	if (stage == 2) {
-		// pointsMove();
-		console.log("pointsMove");
-		pointsMove();
-		stage = 1;
-	}
-	if (stage == 1) {
-		// lineStop();
-		lineAction();
-	}
-	if (stage == 0) {
-		lineMove();
-	}
-};
+// document.onclick = function(e){
+// 	if (stage == 2) {
+// 		// pointsMove();
+// 		console.log("pointsMove");
+// 		pointsMove();
+// 		stage = 1;
+// 	}
+// 	if (stage == 1) {
+// 		// lineStop();
+// 		lineAction();
+// 	}
+// 	if (stage == 0) {
+// 		lineMove();
+// 	}
+// };
 
+var scrollAction = (function(){
+	var sect = 0;
+
+	return function(top){
+		var ts;
+		for (var i = 0 - 1; i < hrefTop.length; i++) {
+			if ((top > hrefTop[i]) && (top < hrefTop[i+1])) {
+				ts = i+1;
+			}
+		}
+		if (ts != sect) {
+			sect = ts;
+			lineMove();
+		}
+		if (top < hrefTop[0]) {sect = 0;}
+		console.log(sect);
+	};
+}());
+
+
+
+var hrefTop = [];
+$('h3').each(function(){
+	hrefTop.push($(this).offset().top);
+})
+
+$(document).ready(function(){
+
+	$(document).scroll(function(){
+		scrollAction($(this).scrollTop());
+	})
+});
