@@ -3,11 +3,11 @@ var canvas = document.getElementById("canvas");
 var w = canvas.clientWidth;
 var h = canvas.clientHeight;
 
-var blockWidth =100;
-var blockHeight = Math.round(blockWidth / 2.5);
+var blockWidth =300;
+var blockHeight = Math.round(blockWidth / 3);
 var lineColor = "#FFB2AE";
-var angleMin = 75;
-var angleMax = 125;
+var angleMin = 60;
+var angleMax = 140;
 
 var rgbColor = function(hex) {
 	return [parseInt(hex.substring(1,3),16), parseInt(hex.substring(3,5),16), parseInt(hex.substring(5,7),16)];
