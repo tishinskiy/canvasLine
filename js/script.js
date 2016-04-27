@@ -96,6 +96,25 @@ var pointsMove = function() {
 
 }
 
+var pointsStart = function() {
+	var sp = -w;
+	for (var i = 0; i < points.length; i++) {
+		points[i].x = sp;
+		sp = sp + blockWidth;
+		points[i].y = blockHeight/2;
+		points[i].angle = 0;
+	}
+}
+var pointsFinish = function() {
+	var sp = -w;
+	for (var i = 0; i < points.length; i++) {
+		points[i].x = sp;
+		sp = sp + blockWidth;
+		points[i].y = h - blockHeight/2;
+		points[i].angle = 0;
+	}
+}
+
 var DrowLine = function() {
 
 	var blockDraw = function(obj) {
@@ -125,6 +144,8 @@ var DrowLine = function() {
 		blockCreate(i);
 		blockDraw(blocks[i-1]);
 	}
+
+	// console.log(current[0].x);
 
 	// help circle draw
 
@@ -180,7 +201,7 @@ var blockCreate = function(i) {
 	var kz = lineAngle(a, b);
 	var kq;
 
-	if(kz > angleMax) {z = -1;}
+	if(kz > angleMax+5) {z = -1;}
 
 	if (c) {
 		k3 = Math.tan(c.angle*Math.PI/180);
@@ -271,10 +292,10 @@ function anglePoints(p1, p2) {
 }
 
 
-var lineMove = function() {
+var lineMove = function(poinsAction) {
 	color2 = "rgba("+(rgb[0]-50)+", "+(rgb[1]-50)+", "+(rgb[2]-50)+", 1)";
-	pointsMove();
-	var shag = 50;
+	poinsAction();
+	var shag = 20;
 	var j = 0;
 
 	var cpId = Math.round(points.length / 2)
@@ -301,63 +322,17 @@ var lineMove = function() {
 				}
 
 			}
-
-			// console.log(a*180/Math.PI);
-
 			current[i].angle = a*180/Math.PI;
 		}
-
-		// color2 = "rgba("+(rgb[0]-(50/(shag-j)))+", "+(rgb[1]-(50/(shag-j)))+", "+(rgb[2]-(50/(shag-j)))+", 1)";
-
-		// console.log("shag = "+j);
 		j++;
 		DrowLine();
+		// console.log(j);
 
 		if (j == shag) {
 			clearInterval(kadr);
-			// console.log(current);
-			setTimeout(function(){lineMove()},300);
 		}
-	}, 10);
-	// stage = 2;
-	// console.log(points);
+	}, 30);
 }
-
-var lineStop = function() {
-	setInterval(function(){
-		for (var i = current.length - 1; i >= 0; i--) {
-			current[i].angle++;
-			DrowLine();
-		}
-		
-	}, 10);
-}
-
-var lineAction = (function() {
-	var shag = 20;
-	var cpId = Math.round(points.length / 2);
-	var j = 0;
-	// pointsMove();
-
-	return function(){
-
-		for (var i = current.length - 1; i >= 0; i--) {
-			current[i].angle = current[i].angle + (points[i].angle - current[i].angle) / (shag -j);
-			current[i].width = current[i].width + (points[i].width - current[i].width) / (shag -j);
-			current[i].x = current[i].x + (points[i].x - current[i].x) / (shag -j);
-			current[i].y = current[i].y + (points[i].y - current[i].y) / (shag -j);
-		}
-		
-		// color2 = "rgba("+(rgb[0]-(50/(shag-j)))+", "+(rgb[1]-(50/(shag-j)))+", "+(rgb[2]-(50/(shag-j)))+", 1)";
-
-		console.log("shag = "+j);
-		console.log("action = "+j);
-		console.log(current);
-		j++;
-		DrowLine();
-	}
-	stage = 2;
-}());
 
 var init = function() {
 	ctx = canvas.getContext('2d');
@@ -365,25 +340,61 @@ var init = function() {
 	canvas.height = h;
 }
 
+
+var scrollAction = (function(){
+	var sect = 0;
+	var act;
+
+	return function(top){
+		var move = function(sect){
+
+			if (sect > 0) {
+				act = setTimeout(function(){lineMove(pointsMove)}, 100);
+			}
+
+			if ((sect == 0) || (sect == undefined)) {
+				act = setTimeout(function(){lineMove(pointsStart)}, 10);
+			}
+			if (sect == -1) {
+				act = setTimeout(function(){lineMove(pointsFinish)}, 10);
+			}
+			clearInterval(act-1);
+		};
+
+		var ts;
+		if (top + $(window).innerHeight() + $('footer').innerHeight() >= $(document).innerHeight() ) {
+			move(-1);
+			ts = -1;
+			sect = -1;
+		}
+		else {
+
+			for (var i = 0 - 1; i < hrefTop.length; i++) {
+				if ((top > hrefTop[i]) && (top < hrefTop[i+1])) {
+					ts = i;
+				}
+			}
+			if (ts != sect) {
+				sect = ts
+				move(sect);
+			}
+		}
+	};
+}());
+
+var hrefTop = [0];
+$('h3').each(function(){
+	hrefTop.push($(this).offset().top);
+});
+
+$(document).ready(function(){
+
+	$(document).scroll(function(){
+		scrollAction($(this).scrollTop());
+	})
+});
+
+
 pointsCreate();
 init();
-DrowLine();
-
-var stage = 0;
-
-document.onclick = function(e){
-	if (stage == 2) {
-		// pointsMove();
-		console.log("pointsMove");
-		pointsMove();
-		stage = 1;
-	}
-	if (stage == 1) {
-		// lineStop();
-		lineAction();
-	}
-	if (stage == 0) {
-		lineMove();
-	}
-};
-
+scrollAction();

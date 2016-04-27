@@ -13,9 +13,57 @@ html {
 body {
 	background: #333;
 	height: 100%;
+	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+section {
+	margin-bottom: 20px;
+	line-height: 1.4;
 }
 
 #canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
 	width: 100%;
 	height: 100%;
+	z-index: -1;
+}
+
+header {
+	height: 150px;
+	// background: #FFB2AE;
+	padding: 30px 20px;
+
+}
+
+h1 {
+	font-size: 40px;
+	text-transform: uppercase;
+	color: #fff;
+}
+
+.container {
+	width: 1000px;
+	margin: 0 auto;
+	background: rgba(0, 0, 0, 0.7);
+	padding: 20px;
+
+}
+h3 {
+	font-size: 30px;
+	padding-top: 20px;
+	color: #fff;
+	font-weight: normal;
+	text-transform: uppercase;
+}
+
+p {
+	font-size: 14px;
+	color: #eee;
+	margin-bottom: 20px;
+}
+
+a {
+	text-decoration: none;
 }
