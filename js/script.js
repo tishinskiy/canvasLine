@@ -5,17 +5,18 @@ var h = canvas.clientHeight;
 
 var blockWidth =300;
 var blockHeight = Math.round(blockWidth / 3);
-var lineColor = "#FFB2AE";
+var startColor = "#D6D6D6";
+var lineColor = ["#FF6D40", "#FFA904", "#F3FC05", "#00AB04"];
+var finishColor = "#0462BB";
 var angleMin = 60;
 var angleMax = 140;
 
 var rgbColor = function(hex) {
 	return [parseInt(hex.substring(1,3),16), parseInt(hex.substring(3,5),16), parseInt(hex.substring(5,7),16)];
 }
-var rgb = rgbColor(lineColor);
+var rgb = rgbColor(startColor);
+var color1 = "rgba("+(rgb[0])+", "+(rgb[1])+", "+(rgb[2])+", 1)";
 var color2 = "rgba("+(rgb[0])+", "+(rgb[1])+", "+(rgb[2])+", 1)";
-
-rgbColor(lineColor);
 
 
 var centerLine = Math.round(h / 2 );
@@ -119,8 +120,7 @@ var DrowLine = function() {
 
 	var blockDraw = function(obj) {
 
-		var rgb = rgbColor(lineColor);
-		if(blocks.indexOf(obj) & 1) {ctx.fillStyle = "rgba("+rgb[0]+", "+rgb[1]+", "+rgb[2]+", 1)";}
+		if(blocks.indexOf(obj) & 1) {ctx.fillStyle = color1;}
 		else {ctx.fillStyle = color2;}
 		ctx.strokeStyle = "transparent";
 		ctx.lineWidth = 1;
@@ -291,11 +291,18 @@ function anglePoints(p1, p2) {
 	return a*180/Math.PI;
 }
 
+var colorMove = function(color, i, k) {
+	var cn = rgbColor(color);
 
-var lineMove = function(poinsAction) {
-	color2 = "rgba("+(rgb[0]-50)+", "+(rgb[1]-50)+", "+(rgb[2]-50)+", 1)";
+	color1 = "rgba("+Math.round(rgb[0]+(cn[0]-rgb[0])/i)+", "+Math.round(rgb[1]+(cn[1]-rgb[1])/i)+", "+Math.round(rgb[2]+(cn[2]-rgb[2])/i)+", 1)";
+	color2 = "rgba("+Math.round(rgb[0]+(cn[0]-rgb[0])/i-k)+", "+Math.round(rgb[1]+(cn[1]-rgb[1])/i-k)+", "+Math.round(rgb[2]+(cn[2]-rgb[2])/i-k)+", 1)";
+}
+
+
+var lineMove = function(poinsAction, color_2, darc=0) {
+	// color2 = "rgba("+(rgb[0]-50)+", "+(rgb[1]-50)+", "+(rgb[2]-50)+", 1)";
 	poinsAction();
-	var shag = 20;
+	var shag = 50;
 	var j = 0;
 
 	var cpId = Math.round(points.length / 2)
@@ -310,28 +317,25 @@ var lineMove = function(poinsAction) {
 		}
 
 		for (var i = current.length - 1; i > 0; i--) {
-
 			var a = Math.atan((current[i].y - current[i-1].y) / (current[i].x - current[i-1].x));
-
 			if ((current[i].x - current[i-1].x) < 0) {
-
 				a = Math.PI + a;
-
 				if ((current[i].x - current[i-1].x) < 0) {
 					a = -(2*Math.PI - a);
 				}
-
 			}
 			current[i].angle = a*180/Math.PI;
 		}
+		colorMove(color_2, shag -j, darc);
 		j++;
+		
 		DrowLine();
-		// console.log(j);
 
 		if (j == shag) {
+			rgb = rgbColor(color_2);
 			clearInterval(kadr);
 		}
-	}, 30);
+	}, 10);
 }
 
 var init = function() {
@@ -349,14 +353,24 @@ var scrollAction = (function(){
 		var move = function(sect){
 
 			if (sect > 0) {
-				act = setTimeout(function(){lineMove(pointsMove)}, 100);
+				var aColor;
+
+				if(Array.isArray(lineColor)){
+
+					if(lineColor[sect-1]) {aColor = lineColor[sect-1];}
+					else {aColor = lineColor[lineColor.length-1];}
+				}
+				else {aColor = lineColor;}
+
+
+				act = setTimeout(function(){lineMove(pointsMove, aColor, 50)}, 100);
 			}
 
 			if ((sect == 0) || (sect == undefined)) {
-				act = setTimeout(function(){lineMove(pointsStart)}, 10);
+				act = setTimeout(function(){lineMove(pointsStart,startColor)}, 10);
 			}
 			if (sect == -1) {
-				act = setTimeout(function(){lineMove(pointsFinish)}, 10);
+				act = setTimeout(function(){lineMove(pointsFinish,finishColor)}, 10);
 			}
 			clearInterval(act-1);
 		};
@@ -370,7 +384,7 @@ var scrollAction = (function(){
 		else {
 
 			for (var i = 0 - 1; i < hrefTop.length; i++) {
-				if ((top > hrefTop[i]) && (top < hrefTop[i+1])) {
+				if ((top >= hrefTop[i]) && (top < hrefTop[i+1])) {
 					ts = i;
 				}
 			}
