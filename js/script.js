@@ -3,8 +3,10 @@ var canvas = document.getElementById("canvas");
 var w = canvas.clientWidth;
 var h = canvas.clientHeight;
 
+
 var blockWidth =300;
-var blockHeight = Math.round(blockWidth / 3);
+var lineHeight;
+var blockHeight =  Math.round(blockWidth / 3);
 var startColor = "#D6D6D6";
 var lineColor = ["#FF6D40", "#FFA904", "#F3FC05", "#00AB04"];
 var finishColor = "#0462BB";
@@ -57,6 +59,7 @@ var pointsMove = function() {
 	var cpId = Math.round(points.length / 2)
 	var cp = points[cpId];
 	var rotation = true;
+	lineHeight =  Math.round(blockWidth / 3);
 	cp.y = getRandomInt(centerLine-blockWidth/2, centerLine+blockWidth/2);
 	var angle = anglePoints(points[cpId-1], cp);
 
@@ -98,20 +101,22 @@ var pointsMove = function() {
 }
 
 var pointsStart = function() {
+	lineHeight = $('header').innerHeight();
 	var sp = -w;
 	for (var i = 0; i < points.length; i++) {
 		points[i].x = sp;
 		sp = sp + blockWidth;
-		points[i].y = blockHeight/2;
+		points[i].y = lineHeight/2;
 		points[i].angle = 0;
 	}
 }
 var pointsFinish = function() {
+	lineHeight = $('footer').innerHeight();
 	var sp = -w;
 	for (var i = 0; i < points.length; i++) {
 		points[i].x = sp;
 		sp = sp + blockWidth;
-		points[i].y = h - blockHeight/2;
+		points[i].y = h - lineHeight/2;
 		points[i].angle = 0;
 	}
 }
@@ -309,6 +314,7 @@ var lineMove = function(poinsAction, color_2, darc=0) {
 
 	var kadr = setInterval(function(){
 		clearInterval(kadr-1);
+		blockHeight = blockHeight + (lineHeight - blockHeight) / (shag -j)
 
 		for (var i = current.length - 1; i >= 0; i--) {
 
@@ -335,7 +341,7 @@ var lineMove = function(poinsAction, color_2, darc=0) {
 			rgb = rgbColor(color_2);
 			clearInterval(kadr);
 		}
-	}, 10);
+	}, 80);
 }
 
 var init = function() {
